@@ -2,11 +2,12 @@
 #-------------------------------
 # Implementación de diálogo
 
+
 import logging      # Ayuda a ver lo que sucede con el bot y mostrarlo en consola
 import telegram
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
-
+from funcion import  bachi, consultas_noespecifico, fin, titul, verificar, contac, hola, hola_uni
 # Variables
 TOKEN = 'TOKEN'
 
@@ -46,6 +47,20 @@ btn_terminar = InlineKeyboardButton(
     callback_data="terminar"
 )
 
+# Botones
+btn_modo_articulo = InlineKeyboardButton(
+        text=' 📃 Modalidad por Artículo de Publicación',
+        callback_data="bach_articulo"
+    )
+btn_modo_proyecto = InlineKeyboardButton(
+        text=' 📃 Modalidad por Trabajo de Investigación',
+        callback_data="bach_investigacion"
+    )
+btn_back = InlineKeyboardButton(
+        text=' ⬅️Atrás',
+        callback_data="tramite"
+    )
+
 def start(update, context):
     bot = context.bot
     # chat_Id = update.message.chat_id
@@ -72,33 +87,14 @@ def mensaje(update, context):
     userName = update.effective_user['first_name']
     text = update.message.text  # obtener el texto que envio el usuario en el chat
     logger.info(f'El usuario {userName} ha enviado un nuevo mensaje: "{text}" ;al chat {chatId}')
+    palabras = text.split()
 
-    # Key words
-    badWord = ['hola', 'Hola', 'Buenos', 'buenos', 'Buenas', 'buenas']
-    badWord1 = ['consultar', 'Consultar', 'Buscando', 'buscando', 'Información', 'información', 'informacion',
-                'Informacion']
-    badWord2 = ['Título', 'título', 'Titulo', 'titulo', 'Bachiller', 'bachiller', 'Tramitar', 'tramitar', 'Tramites',
-                'tramites', 'trámites', 'Trámites']
-    badWord3 = ['Secretaría', 'secretaría', 'Contacto', 'contacto', 'escuela']
-    for i in range(6):
-        if badWord[i] in text:
-            bot.sendMessage(  # se enviara un mensaje al chat
-                chat_id=chatId,
-                text=f'🤖: ¡Hola {userName}! ☺️, gracias por invocarme, espero que estes muy bien. '
-                     f' ¿En qué puedo ayudarte?'
-            )
-            break
-    for j in range(6):
-        if badWord1[j] in text:
-            bot.sendMessage(  # se enviara un mensaje al chat
-                chat_id=chatId,
-                text=f'🤖: ¡Bien!, necesitas información.\n'
-                     f'🤖: {userName},¡Dime! : ¿Que tipo de información esta buscando?'
-            )
-            break
-    for k in range(10):
-        if badWord2[k] in text:
-            bot.sendMessage(
+    if verificar(palabras)==1:
+        hola(update,context)
+    
+    if verificar(palabras)==2:
+        hola_uni(update,context)
+        bot.sendMessage(
                 chat_id=chatId,
                 text='🤖: ¡Perfecto!\n'
                      '🤖: Elige una de las opciones:',
@@ -108,20 +104,62 @@ def mensaje(update, context):
                     [btn_terminar]
                 ])
             )
-            break
-    for l in range(4):
-        if badWord3[l] in text:
-            bot.sendMessage(
+
+    if verificar(palabras)==3:
+        hola_uni(update,context)
+        bot.sendMessage(
+            chat_id=chatId,
+            parse_mode='HTML',
+            text=f'🤖: Estas son las dos modalidades para obtener el <b>Grado de Bachiller</b> 👇',
+            reply_markup=InlineKeyboardMarkup([
+                [btn_modo_articulo],
+                [btn_modo_proyecto],
+                ])
+            )
+
+    if verificar(palabras)==4:
+        hola_uni(update,context)
+        titul(update,context)
+
+    if verificar(palabras)==5:
+        hola_uni(update,context)
+        contac(update,context)
+
+    if verificar(palabras)==6:
+        bot.sendMessage(
                 chat_id=chatId,
-                text='🤖: Bien!.\n'
+                text='🤖: ¡Perfecto!\n'
                      '🤖: Elige una de las opciones:',
                 reply_markup=InlineKeyboardMarkup([
-                    [btn_contacto],
+                    [btn_bachiller],
+                    [btn_titulacion],
                     [btn_terminar]
                 ])
             )
-            break
 
+    if verificar(palabras)==7:
+       bachi(update,context)
+       bot.sendMessage(
+            chat_id=chatId,
+            parse_mode='HTML',
+            text=f'🤖: Estas son las dos modalidades para obtener el <b>Grado de Bachiller</b> 👇',
+            reply_markup=InlineKeyboardMarkup([
+                [btn_modo_articulo],
+                [btn_modo_proyecto],
+                ])
+            )
+
+    if verificar(palabras)==8:
+       titul(update,context)
+
+    if verificar(palabras)==9:
+        contac(update,context)
+
+    if verificar(palabras)==10:
+        fin(update,context)
+    
+    if verificar(palabras)==11:
+        consultas_noespecifico(update,context)
 
 # Callbacks functions
 # -------------------
@@ -226,6 +264,8 @@ def titulacion_callback_handler(update, context):
     )
     terminar(query, update)
 
+
+
 def bachiller_callback_handler(update, context):
     # Consola retroalimentación
     user_Name = update.effective_user["first_name"]
@@ -235,19 +275,7 @@ def bachiller_callback_handler(update, context):
     query = update.callback_query  # Recibe el mensaje
     query.answer()  # Requerido. Responde silenciosamente
 
-    # Botones
-    btn_modo_articulo = InlineKeyboardButton(
-        text=' 📃 Modalidad por Artículo de Publicación',
-        callback_data="bach_articulo"
-    )
-    btn_modo_proyecto = InlineKeyboardButton(
-        text=' 📃 Modalidad por Trabajo de Investigación',
-        callback_data="bach_investigacion"
-    )
-    btn_back = InlineKeyboardButton(
-        text=' ⬅️Atrás',
-        callback_data="tramite"
-    )
+    
 
     query.edit_message_text(
         parse_mode='HTML',
@@ -281,7 +309,7 @@ def bach_articulo_callback_handler(update, context):
             [btn_back]
         ])
     )
-    terminar(query, update)
+
 
 def bach_investigacion_callback_handler(update, context):
     # Consola retroalimentación
@@ -316,7 +344,7 @@ def bach_investigacion_callback_handler(update, context):
             [btn_back]
         ])
     )
-    terminar(query, update)
+
 
 def terminar_callback_handler(update, context):
     user_Name = update.effective_user["first_name"]
@@ -325,8 +353,7 @@ def terminar_callback_handler(update, context):
 
     query.edit_message_text(
         parse_mode='HTML',
-        text=f' <b>🤖: Aqui tienes lo solicitado ☺️.</b>\n'
-             f'🤖: Si hay algo mas en lo que pueda ayudarte, escríbeme...',
+        text=f'🤖: ESPERO HABERTE AYUDADO ☺️.\n'
     )
 
 
@@ -335,9 +362,8 @@ def terminar_callback_handler(update, context):
 def terminar(update, update1):
     userName = update1.effective_user['first_name']
     update.message.reply_text(  # se enviara un mensaje al chat
-        text=f'🤖: Lo solicitado ☺️.\n'
-             f'🤖: Gracias por escribirme {userName}.\n'
-             f'🤖: Si hay algo mas en lo que pueda ayudarte, Escribeme...',
+        parse_mode='HTML',
+        text=f'🤖: ESPERO HABERTE AYUDADO ☺️.\n'
     )
 
 # Main Function
