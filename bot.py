@@ -1,96 +1,348 @@
+import logging      # Ayuda a ver lo que sucede con el bot y mostrarlo en consola
+import telegram
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import bot
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, ConversationHandler, MessageHandler, Filters
 
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, dispatcher, CallbackQueryHandler
 
-# Defina algunos controladores de comandos. Por lo general, toman los dos argumentos bot y
-# actualizar. Los controladores de errores también reciben el objeto TelegramError generado por error.
-def start(update: Update, context: CallbackContext):
+# Variables
+TOKEN = 'TOKEN'
 
-    boton1 = InlineKeyboardButton(
-        text = "Horario para Tramites Documentarios",
-        callback_data = '1'
+# Configuracion de logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s,"
+)
+logger = logging.getLogger()
+
+# Funciones para comandos
+def start(update, context):
+    bot = context.bot
+    # chat_Id = update.message.chat_id
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha iniciado(/start) el bot')   # Consola
+
+    # Lo que se muestra al ejecutar el comando /start
+    update.message.reply_text(
+        text=f'Bienvenido al Bot 🤖 de la Escuela Profesional de Ciencias de la Computación',
+        
     )
-    boton2 = InlineKeyboardButton(
-        text = "Datos para contactarce con Secretaria",
-        callback_data = '2'
+
+def mensaje(update, context):
+    bot = context.bot
+    updateMsg = getattr(update, 'message', None)
+    messageId = updateMsg.message_id #Obtiene el id del mensaje
+    chatId = update.message.chat_id
+    userName = update.effective_user['first_name']
+    text = update.message.text #obtener el texto que envio el usuario en el chat
+    logger.info(f'El usuario {userName} ha enviado un nuevo mensaje: "{text}" ;al chat {chatId}')
+    # Botones
+    btn_contacto = InlineKeyboardButton(
+        text='✉️ Contacto de Secretaria',
+        callback_data="contacto"
     )
-    boton3 = InlineKeyboardButton(
-        text = "Requisitos para el Bachillerato",
-        callback_data = '3'
+    btn_terminar = InlineKeyboardButton(
+        text='Terminar conversación',
+        callback_data="terminar"
     )
-    boton4 = InlineKeyboardButton(
-        text = "Requisitos para Titulación",
-        callback_data = '4'
+    btn_tramites = InlineKeyboardButton(
+        text='🎓 trámites',
+        callback_data="tramite"
     )
-    """Send a message when the command /start is issued."""
-    update.message.reply_text('CIENCIAS DE LA COMPUTACIÓN - UNSA\n\n¡Hola!, \n BIENVENIDO al chat de informacion\n')
-    update.message.reply_text(text='¿En que puedo ayudarte?',
-        reply_markup= InlineKeyboardMarkup([
-            [boton1],
-            [boton2],
-            [boton3],
-            [boton4]
+
+    badWord = ['hola','Hola','Buenos','buenos','Buenas','buenas']
+    badWord1 = ['consultar','Consultar','Buscando','buscando','Información','información']
+    badWord2 = ['Título','título','Titulo','titulo','Bachiller','bachiller','Tramitar','tramitar','Tramites','tramites']
+    badWord3 = ['Secretaría','secretaría','Contacto','contacto']
+    for i in range(6):
+        if badWord[i] in text:
+            bot.sendMessage(#se enviara un mensaje al chat
+                chat_id = chatId,
+                text = f'🤖: ¡Hola! {userName} ☺️, gracias por invocarme, espero que estes muy bien.\n'
+                       f'🤖: ¡Dime!, ¿En que puedo ayudarte?'
+            )
+            break
+    for j in range(6):
+        if badWord1[j] in text:
+            bot.sendMessage(#se enviara un mensaje al chat
+                chat_id = chatId,
+                text = f'🤖: ¡Bien!, necesitas informacion.\n'
+                       f'🤖: {userName},¡dime! : ¿Que tipo de información esta buscando?'
+            )
+            break
+    for k in range(10):  
+        if badWord2[k] in text:
+            bot.sendMessage(
+                chat_id = chatId,
+                text = '🤖: perfecto!.\n'
+                       '🤖: Elige una de las opciones:',
+                reply_markup = InlineKeyboardMarkup([
+                    [btn_tramites],
+                    [btn_terminar]
+                ])
+            )
+            break
+    for l in range(4):
+        if badWord3[l] in text:
+            bot.sendMessage(
+                chat_id = chatId,
+                text = '🤖: Bien!.\n'
+                       '🤖: Elige una de las opciones:',
+                reply_markup = InlineKeyboardMarkup([
+                    [btn_contacto],
+                    [btn_terminar]
+                ])
+            )
+            break
+
+    
+   
+
+def getBotInfo(update, context):
+    bot = context.bot
+    chat_Id= update.message.chat_id
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha solicitado información sobre el bot')
+    bot.sendMessage(
+        chat_id=chat_Id,
+        parse_mode="HTML",
+        text=f'Hola soy el bot 🤖 de la <b>Escuela Profesional de Ciencia de la Computación - UNSA</b>.'
+             f'Si necesitas información sobre trámites de Bachiller y Título Profesional '
+             f'puedo ayudarte. Comienza escribiendo /start.' # 2da manera de responder
+    )
+
+def terminar_callback_handler(update, context):
+    user_Name = update.effective_user["first_name"]
+    # print(update.callback_query)
+    query = update.callback_query   # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+
+    query.edit_message_text(
+        parse_mode='HTML',
+        text=f' <b>🤖: Lo solicitado ☺️.</b>\n'
+             f'🤖: Gracias por escribirme {user_Name}.\n'
+             f'🤖: Si hay algo mas en lo que pueda ayudarte, Escribeme...',
+    )
+    
+
+# Callbacks functions
+def contacto_callback_handler(update, context):
+    # print(update.callback_query)
+    query = update.callback_query   # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+
+    query.edit_message_text(
+        parse_mode='HTML',
+        text=' <b>INFORMACIÓN DE CONTACTO DE LA EPCC</b>\n'
+    )
+    horario(query,update)
+    
+def tramites_callback_handler(update, context):
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha seleccionado Trámites')
+    # print(update.callback_query)
+    query = update.callback_query   # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+    query.edit_message_text(
+        parse_mode='HTML',
+        text=' <b>TRAMITES</b>\n'
+    )
+    # Botones
+    btn_bachiller = InlineKeyboardButton(
+        text=' 🎓📃 Trámite para Bachiller',
+        callback_data="bachiller"
+    )
+    btn_titulacion = InlineKeyboardButton(
+        text=' ‍🎓📜‍ Trámite para Titulación',
+        callback_data="titulacion"
+    )
+
+    query.message.reply_text(
+        parse_mode='HTML',
+        text= f'<b>{user_Name}, estos son los trámites de los que puedo brindarte información 🙂</b> ',
+        reply_markup=InlineKeyboardMarkup([
+            [btn_bachiller],
+            [btn_titulacion]
         ])
     )
-        
-def button(update: Update, context: CallbackContext):
-    query = update.callback_query
-    if query.data == "1":
-        res = horario(query)
-    elif query.data == "2":
-        res = datos(query)
-    elif query.data == "3":
-        res = bachi(query)
-    elif query.data == "4":
-        #res = reboot(query.message.chat_id)
-        res = titulo(query)
-    else:
-        print("nothing to do")
-
-def help(update: Update, context: CallbackContext):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('¿Necesitas Ayuda?\n\n Para iniciar de nuevo coloque "/star" y envie el mensaje')
-
-def horario(update: Update):
-    update.message.reply_text('HORARIO')
-    update.message.reply_photo('https://www.unsa.edu.pe/wp-content/uploads/2021/01/138230780_3625666907509742_8449437901902103612_o.png')
-def datos(update: Update):
-    update.message.reply_text('-HORARIO DE ATENCION: Lunes-Viernes de 8:45-17:00 HRS \n\n- Encargada: Srta. Raquel \n\n- CORREO: epcc@unsa.edu.pe\n')
-def bachi(update: Update):
-    update.message.reply_text('REQUISITOS:')
-    update.message.reply_photo('https://scontent.faqp2-3.fna.fbcdn.net/v/t1.6435-9/s720x720/151787563_10159091513113529_440347092683463420_n.png?_nc_cat=108&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGD8rhNQZh3QySw_1xH96-l9CXhv90vX1b0JeG_3S9fVsWyatXnk2WE7bc_8lRP7JnsBgyO4SPCW4mgg-LbXYOU&_nc_ohc=lCI2TajRgnQAX8j8sb5&_nc_ht=scontent.faqp2-3.fna&tp=30&oh=5c78ff90876789d84d66e5af5560c356&oe=60CAA41E')
-
-def titulo(update: Update):
-    update.message.reply_text('REQUISITOS:')
-    update.message.reply_photo('https://scontent.faqp2-3.fna.fbcdn.net/v/t1.6435-9/s720x720/151787563_10159091513113529_440347092683463420_n.png?_nc_cat=108&ccb=1-3&_nc_sid=730e14&_nc_eui2=AeGD8rhNQZh3QySw_1xH96-l9CXhv90vX1b0JeG_3S9fVsWyatXnk2WE7bc_8lRP7JnsBgyO4SPCW4mgg-LbXYOU&_nc_ohc=lCI2TajRgnQAX8j8sb5&_nc_ht=scontent.faqp2-3.fna&tp=30&oh=5c78ff90876789d84d66e5af5560c356&oe=60CAA41E')
 
 
-def main():
-    """Start the bot."""
-    # Crea el actualizador y pásale el token de tu bot.
-    # Asegúrese de establecer use_context = True para usar las nuevas devoluciones de llamada basadas en el contexto
-    # Publicar la versión 12 esto ya no será necesario
-    updater = Updater("TOKEN", use_context=True)
-    # Consiga que el despachador registre a los manejadores
-    dispatcher = updater.dispatcher 
-    # en diferentes comandos - responde en Telegram
-    dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(CallbackQueryHandler(button))
+def titulacion_callback_handler(update, context):
+    # Consola retroalimentación
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha seleccionado Trámites > Titulacion')
 
-    dispatcher.add_handler(CommandHandler("help", help))
+    #Actualizando consulta
+    query = update.callback_query  # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+    query.edit_message_text(
+        parse_mode='HTML',
+        text='<b> ‍🎓📜‍ Trámite para Titulación</b>'
+    )
+    query.message.reply_text(
+        parse_mode='HTML',
+        text='<b>REQUISITOS PARA OBTENER EL TITULO PROFESIONAL</b>\n'
+             '▫️Solicitud dirigida al Decano de la facultad en formato UNSA.\n'
+             '▫️Recibo de pago de expedito para optar el Título Profesional.\n'
+             '▫️Trabajo de investigación digitalizado en formato PDF. \n'
+             '▫️Constancia emitida por la Biblioteca Virtual de autorización de publicación en el portal de Tesis '
+             'Electrónicas. \n'
+             '▫️Certificado negativo de antecedentes penales.\n'
+             '▫️Certificado oficial de estudios.\n'
+             '▫️Copia legalizada de DNI en formato A5. \n'
+             '▫️Copia legalizada del Grado de Bachiller. \n'
+             '▫️Fotografía tamaño pasaporte a color fondo blanco. \n'
+             '▫️Constancia de Egresado. \n'
+             '▫️Constancia que acredite dominio de nivel intermedio de idioma extranjero.\n'
+             '▫️Constacia de inscripción a SUNEDU del Grado Académico de Bachiller. \n'
+             '▫️Constancia de no adeudar Bienes. \n'
+             '▫️Constancia de Biblioteca. \n'
+             '▫️Recibo de Subdirección de Finanzas de pago de los derechos por todos los conceptos.\n'
+    )
+    terminar(query,update)
+
+def bachiller_callback_handler(update, context):
+    # Consola retroalimentación
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha seleccionado Trámites > Bachiller')
+
+    #Actualizando consulta
+    query = update.callback_query  # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+
+    # Botones
+    btn_modo_articulo = InlineKeyboardButton(
+        text=' 📃 Modalidad por Artículo de Publicación',
+        callback_data="bach_articulo"
+    )
+    btn_modo_proyecto = InlineKeyboardButton(
+        text=' 📃 Modalidad por Trabajo de Investigación',
+        callback_data="bach_investigacion"
+    )
+    query.edit_message_text(
+        parse_mode='HTML',
+        text='<b> ‍🎓📜‍ Trámite para Bachiller</b>'
+    )
+    query.message.reply_text(
+        parse_mode='HTML',
+        text=f'Estas son las dos modalidades para obtener el <b>Grado de Bachiller</b> 👇',
+        reply_markup=InlineKeyboardMarkup([
+            [btn_modo_articulo],
+            [btn_modo_proyecto]
+        ])
+    )
+
+def bach_articulo_callback_handler(update, context):
+    # Consola retroalimentación
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha seleccionado Trámites > Bachiller > Artículo Científico')
+
+    # Actualizando consulta
+    query = update.callback_query  # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+    query.edit_message_text(
+        parse_mode='HTML',
+        text='<b> ‍📃 Modalidad por Artículo de Publicación </b>'
+    )
+    query.message.reply_text(
+        parse_mode='HTML',
+        text='<b>REQUISITOS PARA OBTENER EL GRADO ACADÉMICO DE BACHILLER</b>\n'
+             '<b>MODALIDAD: <em>ARTÍCULO DE PUBLICACIÓN</em></b>\n'
+             '▫️Pronto más información de esta modalidad.\n'
+    )
+    terminar(query,update)
+
+def bach_investigacion_callback_handler(update, context):
+    # Consola retroalimentación
+    user_Name = update.effective_user["first_name"]
+    logger.info(f'El usuario {user_Name} ha seleccionado Trámites > Bachiller > Trabajo de Invetigación')
+
+    # Actualizando consulta
+    query = update.callback_query  # Recibe el mensaje
+    query.answer()  # Requerido. Responde silenciosamente
+    query.edit_message_text(
+        parse_mode='HTML',
+        text='<b> ‍📃 Modalidad por Trabajo de Investigación </b>'
+    )
+    query.message.reply_text(
+        parse_mode='HTML',
+        text='<b>REQUISITOS PARA OBTENER EL GRADO ACADÉMICO DE BACHILLER</b>\n'
+             '<b>MODALIDAD: <em>TRABAJO DE INVESTIGACIÓN</em></b>\n'
+             '▫️Solicitud dirigida al Decano de la facultad en formato UNSA.\n'
+             '▫️Trabajo de investigación digitalizado en formato PDF. \n'
+             '▫️Constancia emitida por la Biblioteca Virtual de autorización de publicación en el Repositorio.\n'
+             '▫️Certificado negativo de antecedentes penales.\n'
+             '▫️Certificado oficial de estudios.\n'
+             '▫️Copia legalizada de DNI en formato A5. \n'
+             '▫️Fotografía tamaño pasaporte a color fondo blanco. \n'
+             '▫️Constancia de Egresado. \n'
+             '▫️Constancia que acredite dominio de nivel intermedio de idioma extranjero.\n'
+             '▫️Constancia de no adeudar Bienes a la facultad. \n'
+             '▫️Constancia de no adeudar material bibliográfico (Dirección general de Biblioteca). \n'
+             '▫️Recibo de Subdirección de Finanzas de pago de los derechos por todos los conceptos. \n'
+    )
+    terminar(query,update)
+
+def horario(update,update1):
+    userName = update1.effective_user['first_name']
     
-    # en no comando, es decir, mensaje: haga eco del mensaje en Telegram
-    # dp.add_handler(MessageHandler(Filters.text, pizza))
+    update.message.reply_text(#se enviara un mensaje al chat
+        parse_mode='HTML',
+        text=' <b>INFORMACIÓN DE CONTACTO DE LA EPCC</b>\n'
+             '▫️Correo electrónico: epcc@unsa.edu.pe\n'
+             '▫️Teléfono: 949107364 (Secretaría Raquel)\n'
+             '▫️Horario de atención: Lunes a viernes de 8:30 a 10:30AM (vía Meet) \n'
+             '▫ Meet de atención: meet.google.com/smh-igaw-vze\n'
+    )
+    update.message.reply_photo('https://www.unsa.edu.pe/wp-content/uploads/2021/01/138230780_3625666907509742_8449437901902103612_o.png')
+    update.message.reply_text(#se enviara un mensaje al chat
+        text = f'🤖: Lo solicitado ☺️.\n'
+               f'🤖: Gracias por escribirme {userName}.\n'
+               f'🤖: Si hay algo mas en lo que pueda ayudarte, Escribeme...\n'
+    )
+
+def terminar(update,update1):
+    userName = update1.effective_user['first_name']
+    update.message.reply_text(#se enviara un mensaje al chat
+        text = f'🤖: Lo solicitado ☺️.\n'
+               f'🤖: Gracias por escribirme {userName}.\n'
+               f'🤖: Si hay algo mas en lo que pueda ayudarte, Escribeme...',
+    )
 
 
-    # Iniciar el bot
+# Main Function
+if __name__ == '__main__':
+    mybot = telegram.Bot(token=TOKEN)
+    print(mybot.getMe())  # Muestra en consola información sobre el bot
+
+    # Updater: se conecta y recibe los mensajes
+    updater = Updater(mybot.token, use_context=True)
+
+    # Crear el 'despachador'
+    dp = updater.dispatcher
+
+    # Crear comando y el método (acción del comando)
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("botInfo", getBotInfo))
+    dp.add_handler(MessageHandler(Filters.text, mensaje))
+
+    # Crear el callback handler
+    dp.add_handler(ConversationHandler(
+        entry_points=[
+            # Al recibir el patron definido en el data del botón ejecuta la funcion callback
+            CallbackQueryHandler(pattern='contacto', callback=contacto_callback_handler),
+            CallbackQueryHandler(pattern='terminar', callback=terminar_callback_handler),
+            CallbackQueryHandler(pattern='tramite', callback=tramites_callback_handler),
+            CallbackQueryHandler(pattern='bachiller', callback=bachiller_callback_handler),
+            CallbackQueryHandler(pattern='titulacion', callback=titulacion_callback_handler),
+            CallbackQueryHandler(pattern='bach_articulo', callback=bach_articulo_callback_handler),
+            CallbackQueryHandler(pattern='bach_investigacion', callback=bach_investigacion_callback_handler)
+        ],
+        states={},
+        fallbacks=[]
+    ))
+
+    # Preguntar por mensajes entrantes
     updater.start_polling()
 
-    # Ejecute el bot hasta que presione Ctrl-C o el proceso reciba SIGINT,
-    # SIGTERM o SIGABRT. Esto debe usarse la mayor parte del tiempo, ya que
-    # start_polling () no bloquea y detendrá el bot con gracia.
+    # Terminar bot con ctrl + c
     updater.idle()
-
-
-if __name__ == '__main__':
-    main()
