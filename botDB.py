@@ -4,10 +4,10 @@ from firebase_admin import db
 
 # ### INICIANDO CONEXIÓN CON FIREBASE
 # Importando sdk de firebase
-cred = credentials.Certificate("firebase_sdk.json")
+cred = credentials.Certificate("E:\PYTHON DATE\Prueva_47\Firebase_sdk.json")
 
 # Referencia a la BD en tiempo real de FireBase
-firebase_admin.initialize_app(cred, {'databaseURL': 'https://epcc-telegram-bot-default-rtdb.firebaseio.com/'})
+firebase_admin.initialize_app(cred, {'databaseURL': 'https://bot-python-telegram-basedatos-default-rtdb.firebaseio.com/'})
 
 # ### LECTURA DE BASE DE INFORMACIÓN EN BASE DE DATOS ###
 # Referencia a estructura de DataBase
@@ -59,3 +59,36 @@ def print_requisitos(list_requerimientos, col_name, id_show=True):
 
 # print('REQUISITOS BACHILLER \n')
 # print_requisitos(select_list_info(0), 'Información', True)
+
+
+# Obtener informacion de BD y construcción de string
+#---------------------------------------------------------
+list_info_contacto = select_list_info(0)
+string_contacto =''
+for row in list_info_contacto:
+    if isinstance(row, dict):
+        string_contacto += '▫️<b>' + row['Tipo Informacion'] + ':</b> ' + row['Información'] + '\n'
+
+req_bach_automatico = select_list_info(1)
+string_bach_automatico =''
+for row in req_bach_automatico:
+    if isinstance(row, dict):
+        string_bach_automatico += '▫️<b>' + str(row['Id']) + '.</b> ' + row['Requisito'] + '\n'
+
+req_bach_ti = select_list_info(2)
+string_bach_ti =''
+for row in req_bach_ti:
+    if isinstance(row, dict):
+        string_bach_ti += '▫️<b>' + str(row['Id']) + '.</b> ' + row['Requisito'] + '\n'
+
+req_titulo_ti = select_list_info(3)
+string_titulo_ti =''
+for row in req_titulo_ti:
+    if isinstance(row, dict):
+        string_titulo_ti += '▫️<b>' + str(row['Id']) + '.</b> ' + row['Requisito'] + '\n'
+
+req_titulo_suficiencia = select_list_info(4)
+string_titulo_suficiencia =''
+for row in req_titulo_suficiencia:
+    if isinstance(row, dict):
+        string_titulo_suficiencia += '▫️<b>' + str(row['Id']) + '.</b> ' + row['Requisito'] + '\n'
