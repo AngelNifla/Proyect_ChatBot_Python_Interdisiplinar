@@ -84,7 +84,7 @@ def mensaje(update, context):
 
     if verificar(palabras)==4:
         hola_uni(update,context)
-        titulo_investigacion(update,context)
+        titulo(update,context)
         solicitud_confir(update, context)
 
     if verificar(palabras)==5:
@@ -99,8 +99,7 @@ def mensaje(update, context):
         bachiller(update,context)
 
     if verificar(palabras)==8:
-        titulo_investigacion(update,context)
-        solicitud_confir(update,context)
+        titulo(update,context)
 
     if verificar(palabras)==9:
         contac(update,context)
@@ -115,34 +114,38 @@ def mensaje(update, context):
     if verificar(palabras)==12:
         hola_uni(update,context)
         bachiller_investigacion(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==13:
         hola_uni(update,context)
         bachiller_automatico(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==14:
         hola_uni(update,context)
         titulo_investigacion(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==15:
         hola_uni(update,context)
         titulo_suficiencia(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==16:
         bachiller_investigacion(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==17:
         bachiller_automatico(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==18:
         titulo_investigacion(update,context)
+        solicitud_confir(update,context)
     
     if verificar(palabras)==19:
         titulo_suficiencia(update,context)
-
-    if verificar(palabras)==20:
-        titulo(update,context)
-        
+        solicitud_confir(update,context)
 
 # Main Function
 if __name__ == '__main__':

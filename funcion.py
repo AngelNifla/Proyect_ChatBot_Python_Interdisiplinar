@@ -137,21 +137,17 @@ def verificar(lista):
     if r_pal:
         if r_pal2:
             return 6
-        return 7
-    
-    if r_pal:
         if r_pal_1:
             return 16 
         if r_pal_3:
             return 17
+        return 7
 
     if r_pal2:
         if r_pal_1:
             return 18 
         if r_pal_2:
             return 19
-
-    if r_pal2:
         return 8
 
     if r_pal3:
@@ -196,7 +192,7 @@ def solicitud_confir(update, context):
 
     bot.sendMessage(#se enviara un mensaje al chat
         chat_id = chatId,
-        text = f'🤖: ¡Bien!, la informacion que solicitaste es esta 👆🏻:\n'
+        text = f'🤖: La informacion que solicitaste es esta 👆🏻:\n'
             f'🤖: ¿Algo más que necesites 😊?'
     )
 
@@ -289,7 +285,7 @@ def titulo(update, context):
     bot.sendMessage(
             chat_id=chatId,
             parse_mode='HTML',
-            text=f'🤖: Estas son las dos modalidades para obtener el <b>Grado de Bachiller</b> 👇',
+            text=f'🤖: Estas son las dos modalidades para obtener el <b>Grado de Titulación</b> 👇',
             reply_markup=InlineKeyboardMarkup([
                 [btn_modo_suficiencia],
                 [btn_modo_tinvestigacion],
